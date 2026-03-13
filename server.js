@@ -1,6 +1,7 @@
 import express from "express";
 import http from "http";
 import cors from "cors";
+import rateLimit from "express-rate-limit";
 
 import dbConnection from "./db/index.js";
 import { DB_URI, PORT } from "./utils/constants.js";
@@ -13,6 +14,14 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json({ strict: false }));
 
 let server;
+
+const apiLimiter = rateLimit({
+  windowMs: 30 * 1000, // 30 seconds
+  max: 10, // 10 requests per IP per window
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, message: "Too many requests, please try again after 30 seconds" },
+});
 
 const corsOptions = {
   exposedHeaders: [
@@ -29,6 +38,7 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
+app.use(apiLimiter);
 
 app.use("/api", routes);
 

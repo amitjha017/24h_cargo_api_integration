@@ -8,7 +8,6 @@ import { getLoggerWithLabel } from "../utils/logger.js";
  * POST /api/get-rates
  * Get shipping rates based on origin, destination and weight.
  * Uses OAuth token — companyId comes from req.companyId.
- * This endpoint is FREE (no wallet charge).
  *
  * Body: { originCode, destinationCode, volumetric_weight }
  */

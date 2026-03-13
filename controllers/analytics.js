@@ -1,5 +1,4 @@
 import ApiUsageLog from "../db/models/apiUsageLog.js";
-import WalletTransaction from "../db/models/walletTransaction.js";
 import User from "../db/models/user.js";
 import { success, error } from "../utils/response.js";
 import { STATUS_CODES } from "../utils/constants.js";
@@ -92,71 +91,6 @@ export const getApiUsageAnalytics = async (req, res) => {
     );
   } catch (err) {
     logger.error(`Error in getApiUsageAnalytics: ${err.message}`);
-    return error(res, STATUS_CODES.INTERNAL_SERVER, err.message);
-  }
-};
-
-/**
- * GET /api/analytics/wallet
- * Wallet spend analytics
- */
-export const getWalletAnalytics = async (req, res) => {
-  const logger = getLoggerWithLabel("getWalletAnalytics");
-  logger.info("getWalletAnalytics called");
-
-  try {
-    const user = await User.findById(req.userId);
-    if (!user || !user.companyId) {
-      return error(res, STATUS_CODES.BAD_REQUEST, "User or company not found");
-    }
-
-    const { from, to } = req.query;
-    const filter = { companyId: user.companyId };
-
-    if (from || to) {
-      filter.createdAt = {};
-      if (from) filter.createdAt.$gte = new Date(from);
-      if (to) filter.createdAt.$lte = new Date(to);
-    }
-
-    const [spendOverTime, totalCredits, totalDebits] = await Promise.all([
-      WalletTransaction.aggregate([
-        { $match: filter },
-        {
-          $group: {
-            _id: {
-              date: {
-                $dateToString: { format: "%Y-%m-%d", date: "$createdAt" },
-              },
-              type: "$type",
-            },
-            total: { $sum: "$amount" },
-          },
-        },
-        { $sort: { "_id.date": 1 } },
-      ]),
-      WalletTransaction.aggregate([
-        { $match: { ...filter, type: "credit" } },
-        { $group: { _id: null, total: { $sum: "$amount" } } },
-      ]),
-      WalletTransaction.aggregate([
-        { $match: { ...filter, type: "debit" } },
-        { $group: { _id: null, total: { $sum: "$amount" } } },
-      ]),
-    ]);
-
-    return success(
-      res,
-      STATUS_CODES.OK,
-      {
-        spendOverTime,
-        totalCredits: totalCredits[0]?.total || 0,
-        totalDebits: totalDebits[0]?.total || 0,
-      },
-      "Wallet analytics fetched successfully"
-    );
-  } catch (err) {
-    logger.error(`Error in getWalletAnalytics: ${err.message}`);
     return error(res, STATUS_CODES.INTERNAL_SERVER, err.message);
   }
 };

@@ -1,6 +1,5 @@
 import ApiApp from "../db/models/apiApp.js";
 import ApiUsageLog from "../db/models/apiUsageLog.js";
-import Wallet from "../db/models/wallet.js";
 import User from "../db/models/user.js";
 import { success, error } from "../utils/response.js";
 import { STATUS_CODES } from "../utils/constants.js";
@@ -8,7 +7,7 @@ import { getLoggerWithLabel } from "../utils/logger.js";
 
 /**
  * GET /api/dashboard
- * Overview stats: apps count, total API calls, wallet balance
+ * Overview stats: apps count, total API calls
  */
 export const getDashboard = async (req, res) => {
   const logger = getLoggerWithLabel("getDashboard");
@@ -22,12 +21,11 @@ export const getDashboard = async (req, res) => {
 
     const companyId = user.companyId;
 
-    const [appsCount, activeAppsCount, totalApiCalls, wallet] =
+    const [appsCount, activeAppsCount, totalApiCalls] =
       await Promise.all([
         ApiApp.countDocuments({ companyId }),
         ApiApp.countDocuments({ companyId, isActive: true }),
         ApiUsageLog.countDocuments({ companyId }),
-        Wallet.findOne({ companyId }),
       ]);
 
     return success(
@@ -40,10 +38,6 @@ export const getDashboard = async (req, res) => {
         },
         apiCalls: {
           total: totalApiCalls,
-        },
-        wallet: {
-          balance: wallet?.balance || 0,
-          currency: wallet?.currency || "USD",
         },
       },
       "Dashboard data fetched successfully"

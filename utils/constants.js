@@ -4,7 +4,6 @@ export const STATUS_CODES = {
   BAD_REQUEST: 400,
   UNAUTHORIZED: 401,
   FORBIDEN: 403,
-  PAYMENT_REQUIRED: 402,
   NOT_FOUND: 404,
   INTERNAL_SERVER: 500,
 };
@@ -36,15 +35,6 @@ export const RESET_JWT_DURATION = "30m";
 export const BCRYPT_SALT = 12;
 
 export const OAUTH_TOKEN_DURATION = "1h";
-
-// Per-action charges (only specific actions are billable)
-// key = action identifier, value = cost in wallet currency (USD)
-export const ACTION_CHARGES = {
-  create_shipment: 1.00,
-  // Add more billable actions here as needed
-  // e.g. create_package: 0.50,
-  // e.g. generate_label: 0.25,
-};
 
 export const JWT_TYPES = {
   ACCESS_JWT: "access",
